@@ -77,12 +77,12 @@
       <script>
       // Initialize Firebase
       var firebaseConfig = {
-        apiKey: "AIzaSyCoROKp7nbcXqPP0YtA4fO3sPiVYVyi9pI",
-        authDomain: "laravel-auth-9a60c.firebaseapp.com",
-        projectId: "laravel-auth-9a60c",
-        storageBucket: "laravel-auth-9a60c.appspot.com",
-      messagingSenderId: "969104073456",
-      appId: "1:969104073456:web:5a843163dbf96cb9fd1835"
+        apiKey: "AIzaSyCnsetI6k7I8CAoCPPLXiQKUFp9UfFECKM",
+        authDomain: "offr-app-4392b.firebaseapp.com",
+        projectId: "offr-app-4392b",
+        storageBucket: "offr-app-4392b.appspot.com",
+        messagingSenderId: "914894994145",
+        appId: "1:914894994145:web:775c8647391f6cf6aad5a0"
       };
       firebase.initializeApp(config);
       var facebookProvider = new firebase.auth.FacebookAuthProvider();
