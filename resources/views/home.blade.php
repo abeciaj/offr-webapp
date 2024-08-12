@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
+
+
 <div class="container">
     <div class="row">
         @foreach($products as $product)
@@ -22,7 +24,7 @@
         @endforeach
     </div>
 
-    <!-- Ensure the pagination links are called only once -->
+    <!-- Pagination Links -->
     <div class="d-flex justify-content-center">
         {{ $products->links() }}
     </div>

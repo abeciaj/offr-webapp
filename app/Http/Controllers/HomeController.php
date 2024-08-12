@@ -33,7 +33,7 @@ class HomeController extends Controller
 
 
 
-public function index()
+    public function index()
 {
     try {
         $uid = Session::get('uid');
@@ -72,7 +72,7 @@ public function index()
         $combinedData = array_merge($data1, $data2);
 
         // Paginate the combined data
-        $products = $this->paginate($combinedData, 12); // 12 items per page
+        $products = $this->paginate($combinedData, 20); // 12 items per page
 
         return view('home', compact('user', 'products'));
     } catch (\Exception $e) {
@@ -96,7 +96,18 @@ protected function paginate($items, $perPage = 15, $page = null, $options = [])
 
     return $paginatedItems;
 }
+    // public function index()
+    // {
+    //   // FirebaseAuth.getInstance().getCurrentUser();
+    //   try {
+    //     $uid = Session::get('uid');
+    //     $user = app('firebase.auth')->getUser($uid);
+    //     return view('home');
+    //   } catch (\Exception $e) {
+    //     return $e;
+    //   }
 
+    // }
 
     public function customer()
     {
