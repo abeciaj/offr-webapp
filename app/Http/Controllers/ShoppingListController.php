@@ -3,77 +3,102 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Log;
 
 class ShoppingListController extends Controller
 {
-    public function index()
-    {
-        $shoppingList = Session::get('shoppingList', []);
-        return view('shopping.index', ['shoppingList' => $shoppingList]);
+    /**
+     * Display the shopping list items.
+     *
+     * @return \Illuminate\View\View
+     */
+public function show()
+{
+    // Retrieve the shopping list from the session
+    $shoppingList = session()->get('shopping_list', []);
+
+    // Debugging: Log the shopping list
+    \Log::info('Shopping List:', ['list' => $shoppingList]);
+
+    // Ensure the shopping list is an array
+    if (!is_array($shoppingList)) {
+        $shoppingList = json_decode($shoppingList, true);
     }
 
-    public function add(Request $request, $productName)
-    {
-        $colesProducts = $this->fetchProducts('coles.json');
-        $woolworthsProducts = $this->fetchProducts('woolworths.json');
+    // Pass the shopping list to the view
+    return view('shopping_list', ['products' => $shoppingList]);
+}
 
-        $allProducts = array_merge(
-            $this->standardizeProductData($colesProducts),
-            $this->standardizeProductData($woolworthsProducts)
-        );
 
-        Log::info('All Products:', $allProducts);  // Log all products
-        $product = $this->findProductByName($allProducts, $productName);
 
-        if ($product) {
-            $shoppingList = Session::get('shoppingList', []);
-            $shoppingList[$productName] = $product;
-            Session::put('shoppingList', $shoppingList);
-            return redirect()->route('shopping-list.index')->with('success', 'Product added to shopping list.');
-        }
+    /**
+     * Add an item to the shopping list.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function addToShoppingList(Request $request)
+{
+    // Validate the request
+    $request->validate([
+        'product.name' => 'required|string',
+        'product.price' => 'required|numeric',
+        // Add other validations as necessary
+    ]);
 
-        return redirect()->route('shopping-list.index')->with('error', 'Product not found.');
+    // Retrieve the product details from the request
+    $product = $request->input('product');
+
+    // Ensure product is an array and has required fields
+    if (!is_array($product) || !isset($product['name'])) {
+        return redirect()->route('shoppingList.show')->withErrors('Invalid product data.');
     }
 
+    // Retrieve the current shopping list from the session or create an empty array if none exists
+    $shoppingList = session()->get('shopping_list', []);
+
+    // Ensure $shoppingList is an array
+    if (is_string($shoppingList)) {
+        $shoppingList = json_decode($shoppingList, true);
+    }
+
+    // Add the new product to the shopping list
+    $shoppingList[] = $product;
+
+    // Update the session with the new shopping list
+    session()->put('shopping_list', $shoppingList);
+
+    // Redirect back to the shopping list with a success message
+    return redirect()->route('shoppingList.show')->with('success', 'Product added to the shopping list');
+}
+
+
+
+    /**
+     * Remove an item from the shopping list.
+     *
+     * @param string $productName
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function remove($productName)
-    {
-        $shoppingList = Session::get('shoppingList', []);
-        if (isset($shoppingList[$productName])) {
-            unset($shoppingList[$productName]);
-            Session::put('shoppingList', $shoppingList);
-            return redirect()->route('shopping-list.index')->with('success', 'Product removed from shopping list.');
-        }
+{
+    $shoppingList = session()->get('shopping_list', []);
 
-        return redirect()->route('shopping-list.index')->with('error', 'Product not found in shopping list.');
+    // Ensure $shoppingList is an array
+    if (is_string($shoppingList)) {
+        $shoppingList = json_decode($shoppingList, true);
     }
 
-    private function fetchProducts($filename)
-    {
-        $path = storage_path('app/' . $filename);
-        return file_exists($path) ? json_decode(file_get_contents($path), true) : [];
-    }
+    // Filter out the item to be removed
+    $shoppingList = array_filter($shoppingList, function($item) use ($productName) {
+        return isset($item['name']) && $item['name'] !== $productName;
+    });
 
-    private function standardizeProductData(array $products)
-    {
-        return array_map(function($product) {
-            if (isset($product['image_url'])) {
-                $product['imgSrc'] = $product['image_url'];
-            }
-            if (isset($product['unitPrice'])) {
-                $product['price'] = str_replace(['$', 'per', ' '], '', $product['price']);
-            }
-            return $product;
-        }, $products);
-    }
+    // Update the session with the new shopping list
+    session()->put('shopping_list', $shoppingList);
 
-    private function findProductByName(array $products, $productName)
-    {
-        foreach ($products as $product) {
-            if (strcasecmp($product['name'], $productName) === 0) {
-                return $product;
-            }
-        }
-        return null;
-    }
+    // Redirect back to the shopping list with a success message
+    return redirect()->route('shoppingList.show')->with('success', 'Item removed from shopping list.');
+}
+
+
 }

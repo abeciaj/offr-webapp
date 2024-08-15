@@ -37,12 +37,33 @@ Route::resource('/password/reset', App\Http\Controllers\Auth\ResetController::cl
 
 Route::resource('/img', App\Http\Controllers\ImageController::class);
 
-Route::get('/compare-prices/{productName}', [CompareController::class, 'comparePrices'])->name('comparePrices');
+// Route::get('/compare-prices/{productName}', [CompareController::class, 'comparePrices'])->name('comparePrices');
 
-Route::get('/shopping-list', [ShoppingListController::class, 'index'])->name('shopping-list.index');
 
-Route::post('/shopping-list/add/{productName}', [ShoppingListController::class, 'add'])->name('shopping-list.add');
+// Route::post('/shopping-list/add/{productName}', [ShoppingListController::class, 'add'])->name('shopping-list.add');
 
-Route::delete('/shopping-list/remove/{productName}', [ShoppingController::class, 'remove'])->name('shopping-list.remove');
-Route::get('/shopping-list/clear', [ShoppingListController::class, 'clear'])->name('shopping-list.clear');
-Route::post('/shopping-list/add/{productName}', [ShoppingListController::class, 'add'])->name('shopping-list.add');
+// Route::delete('/shopping-list/remove/{productName}', [ShoppingController::class, 'remove'])->name('shopping-list.remove');
+// Route::get('/shopping-list/clear', [ShoppingListController::class, 'clear'])->name('shopping-list.clear');
+// Route::post('/shopping-list/add/{productName}', [ShoppingListController::class, 'add'])->name('shopping-list.add');
+
+//New
+// // Route to show the shopping list
+// Route::get('/shopping-list', [ShoppingListController::class, 'show'])->name('shoppingList.show');
+
+
+// // Route to add an item to the shopping list
+// Route::post('/shopping-list/add', [App\Http\Controllers\ShoppingListController::class, 'addToShoppingList'])->name('addToShoppingList');
+
+
+// // Route to remove an item from the shopping list
+// Route::post('/remove-from-shopping-list/{productName}', [ShoppingListController::class, 'remove'])->name('removeFromShoppingList');
+
+
+
+
+Route::get('/shopping-list', [ShoppingListController::class, 'show'])->name('shoppingList.show');
+Route::post('/add-to-shopping-list', [ShoppingListController::class, 'addToShoppingList'])->name('addToShoppingList');
+Route::post('/remove-from-shopping-list/{productName}', [ShoppingListController::class, 'remove'])->name('removeFromShoppingList');
+
+
+// \Log::info('Product data:', ['product' => $product]);
