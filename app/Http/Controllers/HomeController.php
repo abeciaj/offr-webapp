@@ -14,105 +14,80 @@ use Session;
 
 class HomeController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->middleware('auth');
     }
 
-    /**
-     * Show the application dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
-     */
-
-
-
-
     public function index()
-{
-    try {
-        $uid = Session::get('uid');
-        $user = app('firebase.auth')->getUser($uid);
+    {
+        try {
+            $uid = Session::get('uid');
+            $user = app('firebase.auth')->getUser($uid);
 
-        // Reading JSON files
-        $json1 = File::get(storage_path('coles.json'));
-        $json2 = File::get(storage_path('woolworths.json'));
+            // Reading JSON files
+            $json1 = File::get(storage_path('coles.json'));
+            $json2 = File::get(storage_path('woolworths.json'));
 
-        // Decode JSON data to PHP arrays
-        $data1 = json_decode($json1, true);
-        $data2 = json_decode($json2, true);
+            // Decode JSON data to PHP arrays
+            $data1 = json_decode($json1, true);
+            $data2 = json_decode($json2, true);
 
-        // Normalize the image URLs
-        $data1 = array_map(function ($item) {
-            // Normalize image key
-            if (isset($item['image_url'])) {
-                $item['imgSrc'] = $item['image_url'];
-                unset($item['image_url']);
-            }
-            return $item;
-        }, $data1);
+            // Normalize the image URLs and other keys
+            $data1 = array_map([$this, 'normalizeProduct'], $data1);
+            $data2 = array_map([$this, 'normalizeProduct'], $data2);
 
-        $data2 = array_map(function ($item) {
-            // Ensure image URL key is normalized
-            if (isset($item['imgSrc'])) {
-                $item['imgSrc'] = $item['imgSrc'];
-            } elseif (isset($item['image_url'])) {
-                $item['imgSrc'] = $item['image_url'];
-                unset($item['image_url']);
-            }
-            return $item;
-        }, $data2);
+            // Combine the two datasets
+            $combinedData = array_merge($data1, $data2);
 
-        // Combine the two datasets
-        $combinedData = array_merge($data1, $data2);
+            // Paginate the combined data
+            $products = $this->paginate($combinedData, 20); // 20 items per page
 
-        // Paginate the combined data
-        $products = $this->paginate($combinedData, 20); // 12 items per page
-
-        return view('home', compact('user', 'products'));
-    } catch (\Exception $e) {
-        return $e;
+            return view('home', compact('user', 'products'));
+        } catch (\Exception $e) {
+            return $e->getMessage();  // Return just the error message for simplicity
+        }
     }
-}
 
-protected function paginate($items, $perPage = 15, $page = null, $options = [])
-{
-    $page = $page ?: (Paginator::resolveCurrentPage() ?: 1);
-    $items = $items instanceof \Illuminate\Support\Collection ? $items : collect($items);
-    $paginatedItems = new LengthAwarePaginator(
-        $items->forPage($page, $perPage), 
-        $items->count(), 
-        $perPage, 
-        $page, 
-        $options
-    );
+    protected function paginate($items, $perPage = 15, $page = null, $options = [])
+    {
+        $page = $page ?: (Paginator::resolveCurrentPage() ?: 1);
+        $items = $items instanceof \Illuminate\Support\Collection ? $items : collect($items);
+        $paginatedItems = new LengthAwarePaginator(
+            $items->forPage($page, $perPage),
+            $items->count(),
+            $perPage,
+            $page,
+            $options
+        );
 
-    $paginatedItems->withPath(request()->url());
+        $paginatedItems->withPath(request()->url());
 
-    return $paginatedItems;
-}
-    // public function index()
-    // {
-    //   // FirebaseAuth.getInstance().getCurrentUser();
-    //   try {
-    //     $uid = Session::get('uid');
-    //     $user = app('firebase.auth')->getUser($uid);
-    //     return view('home');
-    //   } catch (\Exception $e) {
-    //     return $e;
-    //   }
+        return $paginatedItems;
+    }
 
-    // }
+    protected function normalizeProduct($item)
+    {
+        // Normalize image URL key
+        if (isset($item['image_url'])) {
+            $item['imgSrc'] = $item['image_url'];
+            unset($item['image_url']);
+        }
+
+        // Set default values if some keys are missing
+        $item['name'] = $item['name'] ?? 'No Name Available';
+        $item['price'] = $item['price'] ?? 'N/A';
+        $item['unitPrice'] = $item['unitPrice'] ?? 'N/A';
+
+        return $item;
+    }
 
     public function customer()
     {
-      $userid = Session::get('uid');
-      return view('customers',compact('userid'));
+        $userid = Session::get('uid');
+        return view('customers', compact('userid'));
     }
 
+   
 }
+

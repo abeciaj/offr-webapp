@@ -1,6 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CompareController;
+use App\Http\Controllers\ShoppingListController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -32,3 +36,13 @@ Route::resource('/home/profile', App\Http\Controllers\Auth\ProfileController::cl
 Route::resource('/password/reset', App\Http\Controllers\Auth\ResetController::class);
 
 Route::resource('/img', App\Http\Controllers\ImageController::class);
+
+Route::get('/compare-prices/{productName}', [CompareController::class, 'comparePrices'])->name('comparePrices');
+
+Route::get('/shopping-list', [ShoppingListController::class, 'index'])->name('shopping-list.index');
+
+Route::post('/shopping-list/add/{productName}', [ShoppingListController::class, 'add'])->name('shopping-list.add');
+
+Route::delete('/shopping-list/remove/{productName}', [ShoppingController::class, 'remove'])->name('shopping-list.remove');
+Route::get('/shopping-list/clear', [ShoppingListController::class, 'clear'])->name('shopping-list.clear');
+Route::post('/shopping-list/add/{productName}', [ShoppingListController::class, 'add'])->name('shopping-list.add');
