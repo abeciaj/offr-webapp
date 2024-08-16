@@ -25,32 +25,40 @@ class HomeController extends Controller
         $uid = Session::get('uid');
         $user = app('firebase.auth')->getUser($uid);
 
-        // Reading JSON files
-        $json1 = File::get(storage_path('coles.json'));
-        $json2 = File::get(storage_path('woolworths.json'));
-        $json3 = File::get(storage_path('iga.json'));
-        $json4 = File::get(storage_path('aldi.json'));
+        // Define the providers and their corresponding JSON files
+        $providers = [
+            'coles' => storage_path('coles.json'),
+            'woolworths' => storage_path('woolworths.json'),
+            'iga' => storage_path('iga.json'),
+            'aldi' => storage_path('aldi.json'),
+        ];
 
-        // Decode JSON data to PHP arrays and access the 'productInfo' key
-        $data1 = json_decode($json1, true)['productInfo'] ?? [];
-        $data2 = json_decode($json2, true)['productInfo'] ?? [];
-        $data3 = json_decode($json3, true)['productInfo'] ?? [];
-        $data4 = json_decode($json4, true)['productInfo'] ?? [];
+        $combinedData = [];
 
-        // Normalize the image URLs and other keys
-        $data1 = array_map([$this, 'normalizeProduct'], $data1);
-        $data2 = array_map([$this, 'normalizeProduct'], $data2);
-        $data3 = array_map([$this, 'normalizeProduct'], $data3);
-        $data4 = array_map([$this, 'normalizeProduct'], $data4);
-
-        // Combine the datasets
-        $combinedData = array_merge($data1, $data2, $data3, $data4);
+        foreach ($providers as $provider => $filePath) {
+            $json = File::get($filePath);
+            $data = json_decode($json, true)['productInfo'] ?? [];
+            $data = array_map(function($item) use ($provider) {
+                return $this->normalizeProduct($item, $provider);
+            }, $data);
+            $combinedData = array_merge($combinedData, $data);
+        }
 
         // Filter products based on search query
         $search = $request->input('search');
         if ($search) {
             $combinedData = array_filter($combinedData, function ($product) use ($search) {
                 return stripos($product['name'], $search) !== false;
+            });
+        }
+
+        // Sort products by price if sort parameter is present
+        $sortByPrice = $request->input('sort_by_price');
+        if ($sortByPrice) {
+            usort($combinedData, function ($a, $b) use ($sortByPrice) {
+                $priceA = floatval($a['price']);
+                $priceB = floatval($b['price']);
+                return $sortByPrice === 'asc' ? $priceA <=> $priceB : $priceB <=> $priceA;
             });
         }
 
@@ -81,7 +89,7 @@ protected function paginate($items, $perPage = 15, $page = null, $options = [])
     return $paginatedItems;
 }
 
-protected function normalizeProduct($item)
+protected function normalizeProduct($item, $provider)
 {
     // Ensure $item is an array before proceeding
     if (!is_array($item)) {
@@ -103,6 +111,7 @@ protected function normalizeProduct($item)
     $item['name'] = $item['name'] ?? 'No Name Available';
     $item['price'] = $item['price'] ?? 'N/A';
     $item['unitPrice'] = $item['unitPrice'] ?? 'N/A';
+    $item['provider'] = $provider; // Add provider information
 
     return $item;
 }

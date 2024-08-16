@@ -9,6 +9,12 @@
         </div>
     @endif
 
+    @if(session('warning'))
+        <div class="alert alert-warning">
+            {{ session('warning') }}
+        </div>
+    @endif
+
     <div class="row">
         @forelse($products as $product)
             @if(is_array($product) && !empty($product['name']))
@@ -21,7 +27,7 @@
                             <h5 class="card-title">{{ $product['name'] ?? 'No Name' }}</h5>
                             <p class="card-text">Price: ${{ $product['price'] ?? 'N/A' }}</p>
                             <p class="card-text">Unit Price: {{ $product['unitPrice'] ?? 'N/A' }}</p>
-
+                            <p class="card-text">Provider: {{ ucfirst($product['provider'] ?? 'Unknown') }}</p>
                             <form action="{{ route('removeFromShoppingList', ['productName' => $product['name']]) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="btn btn-danger">Remove</button>
@@ -35,6 +41,11 @@
                 <p class="text-center">Your shopping list is empty.</p>
             </div>
         @endforelse
+    </div>
+
+    <!-- Pagination Links -->
+    <div class="d-flex justify-content-center">
+        {{ $products->links() }}
     </div>
 </div>
 @endsection

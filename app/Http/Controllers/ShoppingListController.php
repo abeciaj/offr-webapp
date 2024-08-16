@@ -3,6 +3,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 
 class ShoppingListController extends Controller
 {
@@ -24,8 +26,20 @@ public function show()
         $shoppingList = json_decode($shoppingList, true);
     }
 
-    // Pass the shopping list to the view
-    return view('shopping_list', ['products' => $shoppingList]);
+    // Paginate the shopping list
+    $perPage = 10; // Number of items per page
+    $currentPage = Paginator::resolveCurrentPage();
+    $collection = collect($shoppingList);
+    $paginatedItems = $collection->slice(($currentPage - 1) * $perPage, $perPage)->all();
+    $paginator = new LengthAwarePaginator(
+        $paginatedItems,
+        $collection->count(),
+        $perPage,
+        $currentPage,
+        ['path' => Paginator::resolveCurrentPath()]
+    );
+
+    return view('shopping_list', ['products' => $paginator]);
 }
 
 
@@ -36,7 +50,13 @@ public function show()
      * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function addToShoppingList(Request $request)
+    /**
+ * Add an item to the shopping list.
+ *
+ * @param Request $request
+ * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+ */
+public function addToShoppingList(Request $request)
 {
     // Validate the request
     $request->validate([
@@ -50,7 +70,7 @@ public function show()
 
     // Ensure product is an array and has required fields
     if (!is_array($product) || !isset($product['name'])) {
-        return redirect()->route('shoppingList.show')->withErrors('Invalid product data.');
+        return response()->json(['success' => false, 'message' => 'Invalid product data.'], 400);
     }
 
     // Retrieve the current shopping list from the session or create an empty array if none exists
@@ -61,15 +81,25 @@ public function show()
         $shoppingList = json_decode($shoppingList, true);
     }
 
+    // Check if the product is already in the shopping list
+    $productExists = array_filter($shoppingList, function ($item) use ($product) {
+        return isset($item['name']) && $item['name'] === $product['name'];
+    });
+
+    if (!empty($productExists)) {
+        return response()->json(['success' => false, 'message' => 'Product is already in the shopping list.']);
+    }
+
     // Add the new product to the shopping list
     $shoppingList[] = $product;
 
     // Update the session with the new shopping list
     session()->put('shopping_list', $shoppingList);
 
-    // Redirect back to the shopping list with a success message
-    return redirect()->route('shoppingList.show')->with('success', 'Product added to the shopping list');
+    // Return a JSON response indicating success
+    return response()->json(['success' => true, 'message' => 'Product added to the shopping list']);
 }
+
 
 
 
