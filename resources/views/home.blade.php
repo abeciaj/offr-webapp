@@ -3,7 +3,17 @@
 @section('content')
 <div class="container">
 
-    <a href="{{ route('shoppingList.show') }}">View Shopping List</a>
+    <!-- heading tp -->
+
+    <div class=" p-3 mb-4 text-center">
+    
+    <video autoplay loop muted style="max-width: 100%; height: auto;">
+        <source src="{{ asset('video/offr-vid.mp4') }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+</div>
+
+
 
     <!-- Search Form -->
     <div class="row">
@@ -38,7 +48,7 @@
                     <h5 class="card-title">{{ $product['name'] }}</h5>
                     <p class="card-text">Price: ${{ $product['price'] }}</p>
                     <p class="card-text">Unit Price: {{ $product['unitPrice'] }}</p>
-                    <p class="card-text">Provider: {{ ucfirst($product['provider']) }}</p> <!-- Display provider -->
+                    <p class="card-text">Provider: {{ ucfirst($product['provider']) }}</p>
                     @if(isset($product['href']))
                     <a href="{{ $product['href'] }}" class="btn btn-primary">View Product</a>
                     @endif
@@ -61,11 +71,12 @@
         @endforelse
     </div>
 
-    <!-- Pagination Links -->
-    <div class="d-flex justify-content-center">
-        {{ $products->appends(request()->input())->links() }}
+    <!-- Pagination -->
+    <div class="row">
+        <div class="col-12">
+            {{ $products->appends(request()->query())->links('vendor.pagination.bootstrap-5') }}
+        </div>
     </div>
-</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {

@@ -15,6 +15,12 @@
         </div>
     @endif
 
+    <div class="bg-light p-3 mb-4">
+        <h3 class="text-center">
+            <i class="fas fa-shopping-cart fa-2x" style="color: black;" ></i> Shopping List
+        </h3>
+    </div>
+
     <div class="row">
         @forelse($products as $product)
             @if(is_array($product) && !empty($product['name']))
@@ -43,9 +49,11 @@
         @endforelse
     </div>
 
-    <!-- Pagination Links -->
-    <div class="d-flex justify-content-center">
-        {{ $products->links() }}
+       <!-- Pagination -->
+       <div class="row">
+        <div class="col-12">
+            {{ $products->appends(request()->query())->links('vendor.pagination.bootstrap-5') }}
+        </div>
     </div>
 </div>
 @endsection

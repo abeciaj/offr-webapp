@@ -1,4 +1,22 @@
 /* Add this to your app.css or inline in the Blade template */
+body {
+    padding-bottom: 80px; /* Adjust based on the height of your footer */
+}
+
+/* Footer styling */
+.fixed-footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 1000; /* Ensure it stays on top of other content */
+}
+
+/* Adjust footer height if needed */
+.fixed-footer {
+    height: auto;
+}
+
+
 .btn-floating {
     position: fixed;
     bottom: 20px;
@@ -22,3 +40,4 @@
     background-color: #007bff;
     border-color: #007bff;
 }
+
