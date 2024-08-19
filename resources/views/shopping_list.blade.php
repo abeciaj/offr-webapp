@@ -20,7 +20,27 @@
             <i class="fas fa-shopping-cart fa-2x" style="color: black;" ></i> Shopping List
         </h3>
     </div>
+    <style>
+        .card-title {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            height: 3em;
+        }
 
+        .card {
+            min-height: 450px; /* Adjust this based on your card content */
+        }
+
+        .card img {
+            max-height: 200px; /* Adjust this to control image height */
+            object-fit: cover;
+            padding: 10px; /* Add padding around the image */
+            border-radius: 8px; /* Optional: Add rounded corners to the image */
+        }
+    </style>
     <div class="row">
         @forelse($products as $product)
             @if(is_array($product) && !empty($product['name']))
