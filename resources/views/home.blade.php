@@ -3,17 +3,13 @@
 @section('content')
 <div class="container">
 
-    <!-- heading tp -->
-
-    <div class=" p-3 mb-4 text-center">
-    
-    <video autoplay loop muted style="max-width: 100%; height: auto;">
-        <source src="{{ asset('video/offr-vid.mp4') }}" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-</div>
-
-
+    <!-- Video Header -->
+    <div class="p-3 mb-4 text-center">
+        <video autoplay loop muted style="max-width: 100%; height: auto;">
+            <source src="{{ asset('video/offr-vid.mp4') }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
 
     <!-- Search Form -->
     <div class="row">
@@ -36,6 +32,7 @@
             </form>
         </div>
     </div>
+
     <style>
         .card-title {
             display: -webkit-box;
@@ -57,6 +54,11 @@
             border-radius: 8px; /* Optional: Add rounded corners to the image */
         }
     </style>
+
+    <!-- Success Alert Placeholder -->
+    <div id="alert-container"></div>
+
+    <!-- Product Cards -->
     <div class="row">
         @forelse($products as $product)
         <div class="col-sm-3 mb-3">
@@ -98,36 +100,52 @@
         </div>
     </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const forms = document.querySelectorAll('.add-to-shopping-list');
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const forms = document.querySelectorAll('.add-to-shopping-list');
 
-        forms.forEach(function (form) {
-            form.addEventListener('submit', function (event) {
-                event.preventDefault();
-                const formData = new FormData(form);
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            forms.forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    event.preventDefault();
+                    const formData = new FormData(form);
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-                fetch('{{ route("addToShoppingList") }}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
+                    fetch('{{ route("addToShoppingList") }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const alertContainer = document.getElementById('alert-container');
+                        const alertMessage = `
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                ${data.message}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>`;
+                        alertContainer.innerHTML = alertMessage;
+
+                        // Optionally, scroll to the alert
+                        alertContainer.scrollIntoView({ behavior: 'smooth' });
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        const alertContainer = document.getElementById('alert-container');
+                        const alertMessage = `
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                An error occurred. Please try again.
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>`;
+                        alertContainer.innerHTML = alertMessage;
+                    });
                 });
             });
         });
-    });
-</script>
+    </script>
 
+</div>
 @endsection
